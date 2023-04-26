@@ -65,7 +65,7 @@ define("APPURL", "http://localhost/myproject/wooxtravel");  ?>
                     <!-- ***** Menu Start ***** -->
                     <ul class="nav">
                         <li><a href="<?php echo APPURL;?>/index.php" class="active">Home</a></li>
-                        <li><a href="<?php echo APPURL;?>/about.php">About</a></li>
+
                         <li><a href="<?php echo APPURL;?>/deals.php">Deals</a></li>
                         <?php if (isset($_SESSION['username'])) : ?>
                         <li class="nav-item dropdown">

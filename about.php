@@ -1,5 +1,58 @@
 <?php require "includes/header.php"; ?>
 
+
+<?php
+
+if (isset($_GET['id'])){
+    $id = $_GET['id'];
+
+    $country = $conn->query("SELECT * FROM countries WHERE id='$id'");
+    $country->execute();
+
+    $singleCountry = $country->fetch(PDO::FETCH_OBJ);
+
+    //images for the cities
+    $citiesImages = $conn->query("SELECT * FROM cities WHERE country_id='$id'");
+    $citiesImages->execute();
+
+    $singleImage = $citiesImages->fetchALL(PDO::FETCH_OBJ);
+
+    //cities with bookings number
+
+    $cities = $conn->query("SELECT cities.id AS id, cities.name
+    AS name, cities.image AS image, cities.trip_days 
+        AS trip_days, cities.price AS price, COUNT(bookings.cities_id)
+            AS count_bookings FROM cities LEFT JOIN bookings 
+                ON cities.id = bookings.cities_id WHERE cities.country_id = '$id' GROUP BY(bookings.cities_id)");
+
+    $cities->execute();
+
+    $allCities = $cities->fetchAll(PDO:: FETCH_OBJ);
+
+    //cities of every country
+
+    $cities_country = $conn->query("SELECT COUNT(country_id) AS num_city FROM cities WHERE country_id = '$id'");
+    $cities_country->execute();
+
+    $num_cities = $cities_country->fetch(PDO::FETCH_OBJ);
+
+    //number of bookings for every country
+
+    $num_country = $conn->query("SELECT COUNT(bookings.cities_id) AS count_bookings 
+    FROM cities JOIN bookings 
+    ON cities.id = bookings.cities_id WHERE cities.country_id = '$id'");
+    $num_country->execute();
+
+    $num_bookings = $num_country->fetch(PDO::FETCH_OBJ);
+
+
+
+
+
+}
+
+?>
+
   <!-- ***** Main Banner Area Start ***** -->
   <div class="about-main-content">
     <div class="container">
@@ -9,8 +62,8 @@
             <div class="blur-bg"></div>
             <h4>EXPLORE OUR COUNTRY</h4>
             <div class="line-dec"></div>
-            <h2>Welcome To Caribbean</h2>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt uttersi labore et dolore magna aliqua is ipsum suspendisse ultrices gravida</p>
+            <h2>Welcome To <?php echo $singleCountry->name; ?> </h2>
+            <p><?php echo $singleCountry->description; ?></p>
             <div class="main-button">
             </div>
           </div>
@@ -26,58 +79,20 @@
         <div class="slider-content">
           <div class="row">
             <div class="col-lg-12">
-              <h2>Caribbean’s <em>Cities &amp; Towns</em></h2>
+              <h2><?php echo $singleCountry->name; ?>’s <em>Cities &amp; Towns</em></h2>
             </div>
             <div class="col-lg-12">
               <div class="owl-cites-town owl-carousel">
+                  <?php foreach ($singleImage as $image) : ?>
                 <div class="item">
                   <div class="thumb">
-                    <img src="assets/images/cities-01.jpg" alt="">
-                    <h4>Havana</h4>
+                    <img src="assets/images/<?php echo $image->image; ?>" alt="">
+                    <h4><?php echo $image->name; ?></h4>
                   </div>
                 </div>
-                <div class="item">
-                  <div class="thumb">
-                    <img src="assets/images/cities-02.jpg" alt="">
-                    <h4>Kingston</h4>
-                  </div>
-                </div>
-                <div class="item">
-                  <div class="thumb">
-                    <img src="assets/images/cities-03.jpg" alt="">
-                    <h4>George Town</h4>
-                  </div>
-                </div>
-                <div class="item">
-                  <div class="thumb">
-                    <img src="assets/images/cities-04.jpg" alt="">
-                    <h4>Santo Domingo</h4>
-                  </div>
-                </div>
-                <div class="item">
-                  <div class="thumb">
-                    <img src="assets/images/cities-01.jpg" alt="">
-                    <h4>Havana</h4>
-                  </div>
-                </div>
-                <div class="item">
-                  <div class="thumb">
-                    <img src="assets/images/cities-02.jpg" alt="">
-                    <h4>Kingston</h4>
-                  </div>
-                </div>
-                <div class="item">
-                  <div class="thumb">
-                    <img src="assets/images/cities-03.jpg" alt="">
-                    <h4>George Town</h4>
-                  </div>
-                </div>
-                <div class="item">
-                  <div class="thumb">
-                    <img src="assets/images/cities-04.jpg" alt="">
-                    <h4>Santo Domingo</h4>
-                  </div>
-                </div>
+                 <?php endforeach; ?>
+
+
               </div>
             </div>
           </div>
@@ -101,120 +116,28 @@
       <div class="row">
         <div class="col-lg-12">
           <div class="owl-weekly-offers owl-carousel">
+              <?php foreach ($allCities as $city ) : ?>
             <div class="item">
               <div class="thumb">
-                <img src="assets/images/offers-01.jpg" alt="">
+                <img src="assets/images/<?php echo $city->image; ?>" alt="">
                 <div class="text">
-                  <h4>Havana<br><span><i class="fa fa-users"></i> 234 Check Ins</span></h4>
-                  <h6>$420<br><span>/person</span></h6>
+                  <h4><?php echo $city->name; ?><br><span><i class="fa fa-users"></i> <?php echo $city->count_bookings; ?> Check Ins</span></h4>
+                  <h6>$<?php echo $city->price ?><br><span>/person</span></h6>
                   <div class="line-dec"></div>
                   <ul>
                     <li>Deal Includes:</li>
-                    <li><i class="fa fa-taxi"></i> 5 Days Trip > Hotel Included</li>
+                    <li><i class="fa fa-taxi"></i> <?php echo $city->trip_days; ?>  Days Trip > Hotel Included</li>
                     <li><i class="fa fa-plane"></i> Airplane Bill Included</li>
                     <li><i class="fa fa-building"></i> Daily Places Visit</li>
                   </ul>
                   <div class="main-button">
-                    <a href="reservation.php">Make a Reservation</a>
+                    <a href="reservation.php?id=<?php  echo $city->id; ?>">Make a Reservation</a>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="item">
-              <div class="thumb">
-                <img src="assets/images/offers-02.jpg" alt="">
-                <div class="text">
-                  <h4>Kingston<br><span><i class="fa fa-users"></i> 234 Check Ins</span></h4>
-                  <h6>$420<br><span>/person</span></h6>
-                  <div class="line-dec"></div>
-                  <ul>
-                    <li>Deal Includes:</li>
-                    <li><i class="fa fa-taxi"></i> 5 Days Trip > Hotel Included</li>
-                    <li><i class="fa fa-plane"></i> Airplane Bill Included</li>
-                    <li><i class="fa fa-building"></i> Daily Places Visit</li>
-                  </ul>
-                  <div class="main-button">
-                    <a href="reservation.php">Make a Reservation</a>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="item">
-              <div class="thumb">
-                <img src="assets/images/offers-03.jpg" alt="">
-                <div class="text">
-                  <h4>George Town<br><span><i class="fa fa-users"></i> 234 Check Ins</span></h4>
-                  <h6>$420<br><span>/person</span></h6>
-                  <div class="line-dec"></div>
-                  <ul>
-                    <li>Deal Includes:</li>
-                    <li><i class="fa fa-taxi"></i> 5 Days Trip > Hotel Included</li>
-                    <li><i class="fa fa-plane"></i> Airplane Bill Included</li>
-                    <li><i class="fa fa-building"></i> Daily Places Visit</li>
-                  </ul>
-                  <div class="main-button">
-                    <a href="reservation.php">Make a Reservation</a>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="item">
-              <div class="thumb">
-                <img src="assets/images/offers-01.jpg" alt="">
-                <div class="text">
-                  <h4>Havana<br><span><i class="fa fa-users"></i> 234 Check Ins</span></h4>
-                  <h6>$420<br><span>/person</span></h6>
-                  <div class="line-dec"></div>
-                  <ul>
-                    <li>Deal Includes:</li>
-                    <li><i class="fa fa-taxi"></i> 5 Days Trip > Hotel Included</li>
-                    <li><i class="fa fa-plane"></i> Airplane Bill Included</li>
-                    <li><i class="fa fa-building"></i> Daily Places Visit</li>
-                  </ul>
-                  <div class="main-button">
-                    <a href="reservation.php">Make a Reservation</a>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="item">
-              <div class="thumb">
-                <img src="assets/images/offers-02.jpg" alt="">
-                <div class="text">
-                  <h4>Kingston<br><span><i class="fa fa-users"></i> 234 Check Ins</span></h4>
-                  <h6>$420<br><span>/person</span></h6>
-                  <div class="line-dec"></div>
-                  <ul>
-                    <li>Deal Includes:</li>
-                    <li><i class="fa fa-taxi"></i> 5 Days Trip > Hotel Included</li>
-                    <li><i class="fa fa-plane"></i> Airplane Bill Included</li>
-                    <li><i class="fa fa-building"></i> Daily Places Visit</li>
-                  </ul>
-                  <div class="main-button">
-                    <a href="reservation.php">Make a Reservation</a>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="item">
-              <div class="thumb">
-                <img src="assets/images/offers-03.jpg" alt="">
-                <div class="text">
-                  <h4>George Town<br><span><i class="fa fa-users"></i> 234 Check Ins</span></h4>
-                  <h6>$420<br><span>/person</span></h6>
-                  <div class="line-dec"></div>
-                  <ul>
-                    <li>Deal Includes:</li>
-                    <li><i class="fa fa-taxi"></i> 5 Days Trip > Hotel Included</li>
-                    <li><i class="fa fa-plane"></i> Airplane Bill Included</li>
-                    <li><i class="fa fa-building"></i> Daily Places Visit</li>
-                  </ul>
-                  <div class="main-button">
-                    <a href="reservation.php">Make a Reservation</a>
-                  </div>
-                </div>
-              </div>
-            </div>
+           <?php endforeach; ?>
+
           </div>
         </div>
       </div>
@@ -240,11 +163,11 @@
               <div class="info-item">
                 <div class="row">
                   <div class="col-lg-6">
-                    <h4>12.560+</h4>
+                    <h4><?php echo $num_cities->num_city; ?>+</h4>
                     <span>Amazing Places</span>
                   </div>
                   <div class="col-lg-6">
-                    <h4>240.580+</h4>
+                    <h4><?php echo $num_bookings->count_bookings; ?>+</h4>
                     <span>Different Check-ins Yearly</span>
                   </div>
                 </div>

@@ -17,7 +17,6 @@ if (isset($_POST['submit'])){
                 ":username"=> $username,
                 ":email"=> $email,
                 ":mypassword"=> $password
-
         ]);
         header("location: login.php");
     }
